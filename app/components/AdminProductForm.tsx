@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import FileUpload from "./FileUpload";
 import { IKUploadResponse } from "imagekitio-next/dist/types/components/IKUpload/props";
 import { Loader2, Plus, Trash2 } from "lucide-react";
@@ -72,49 +72,82 @@ export default function AdminProductForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="form-control">
-        <label className="label">Product Name</label>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 max-w-2xl mx-auto p-4"
+    >
+      <div className="space-y-2">
+        <label
+          htmlFor="name"
+          className="block text-sm font-medium text-gray-200"
+        >
+          Product Name
+        </label>
         <input
           type="text"
-          className={`input input-bordered ${errors.name ? "input-error" : ""}`}
+          id="name"
           {...register("name", { required: "Name is required" })}
+          className={`w-full px-3 py-2 border rounded-md ${
+            errors.name ? "border-red-500" : "border-gray-300"
+          }`}
         />
         {errors.name && (
-          <span className="text-error text-sm mt-1">{errors.name.message}</span>
+          <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
         )}
       </div>
 
-      <div className="form-control">
-        <label className="label">Description</label>
+      <div className="space-y-2">
+        <label
+          htmlFor="description"
+          className="block text-sm font-medium text-gray-200"
+        >
+          Description
+        </label>
         <textarea
-          className={`textarea textarea-bordered h-24 ${
-            errors.description ? "textarea-error" : ""
+          id="description"
+          {...register("description", {
+            required: "Description is required",
+          })}
+          className={`w-full px-3 py-2 border rounded-md h-24 text-black ${
+            errors.description ? "border-red-500" : "border-gray-300"
           }`}
-          {...register("description", { required: "Description is required" })}
         />
         {errors.description && (
-          <span className="text-error text-sm mt-1">
+          <p className="text-red-500 text-sm mt-1">
             {errors.description.message}
-          </span>
+          </p>
         )}
       </div>
 
-      <div className="form-control">
-        <label className="label">Product Image</label>
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-200">
+          Product Image
+        </label>
         <FileUpload onSuccess={handleUploadSuccess} />
       </div>
 
-      <div className="divider">Image Variants</div>
+      <hr className="my-8" />
+
+      <h2 className="text-lg font-semibold mb-4">Image Variants</h2>
 
       {fields.map((field, index) => (
-        <div key={field.id} className="card bg-base-200 p-4">
+        <div
+          key={field.id}
+          className="bg-gray-50 p-4 rounded-md mb-4 animate-fade-in"
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="form-control">
-              <label className="label">Size & Aspect Ratio</label>
+            <div className="space-y-2">
+              <label
+                htmlFor={`variants.${index}.type`}
+                className="block text-sm font-medium text-black"
+              >
+                Size & Aspect Ratio
+              </label>
+
               <select
-                className="select select-bordered"
+                id={`variants.${index}.type`}
                 {...register(`variants.${index}.type`)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
               >
                 {Object.entries(IMAGE_VARIANTS).map(([key, value]) => (
                   <option key={key} value={value.type}>
@@ -125,74 +158,89 @@ export default function AdminProductForm() {
               </select>
             </div>
 
-            <div className="form-control">
-              <label className="label">License</label>
+            <div className="space-y-2">
+              <label
+                htmlFor={`variants.${index}.license`}
+                className="block text-sm font-medium text-black"
+              >
+                License
+              </label>
               <select
-                className="select select-bordered"
+                id={`variants.${index}.license`}
                 {...register(`variants.${index}.license`)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
               >
                 <option value="personal">Personal Use</option>
                 <option value="commercial">Commercial Use</option>
               </select>
             </div>
 
-            <div className="form-control">
-              <label className="label">Price ($)</label>
+            <div className="space-y-2">
+              <label
+                htmlFor={`variants.${index}.price`}
+                className="block text-sm font-medium text-black"
+              >
+                Price ($)
+              </label>
               <input
                 type="number"
+                id={`variants.${index}.price`}
                 step="0.01"
                 min="0.01"
-                className="input input-bordered"
                 {...register(`variants.${index}.price`, {
                   valueAsNumber: true,
                   required: "Price is required",
                   min: { value: 0.01, message: "Price must be greater than 0" },
                 })}
+                className={`w-full px-3 py-2 border rounded-md text-black ${
+                  errors.variants?.[index]?.price
+                    ? "border-red-500"
+                    : "border-gray-300"
+                }`}
               />
               {errors.variants?.[index]?.price && (
-                <span className="text-error text-sm mt-1">
+                <p className="text-red-500 text-sm mt-1">
                   {errors.variants[index]?.price?.message}
-                </span>
+                </p>
               )}
             </div>
-
-            <div className="flex items-end">
-              <button
-                type="button"
-                className="btn btn-error btn-sm"
-                onClick={() => remove(index)}
-                disabled={fields.length === 1}
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
           </div>
+
+          <button
+            type="button"
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+            onClick={() => remove(index)}
+            disabled={fields.length === 1}
+          >
+            <Trash2 className="w-4 h-4 inline-block mr-2" />
+            Remove Variant
+          </button>
         </div>
       ))}
 
       <button
         type="button"
-        className="btn btn-outline btn-block"
+        className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
         onClick={() =>
           append({
-            type: "SQUARE" as ImageVariantType,
+            type: "SQUARE",
             price: 9.99,
             license: "personal",
           })
         }
       >
-        <Plus className="w-4 h-4 mr-2" />
+        <Plus className="w-4 h-4 inline-block mr-2" />
         Add Variant
       </button>
 
       <button
         type="submit"
-        className="btn btn-primary btn-block"
+        className="w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300"
         disabled={loading}
       >
         {loading ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-4 h-4 inline-block mr-2 animate-spin" />
             Creating Product...
           </>
         ) : (

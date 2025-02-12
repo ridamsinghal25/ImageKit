@@ -34,7 +34,7 @@ function FileUpload({
         onError={onError}
         onSuccess={handleSuccess}
         onUploadStart={handleStartUpload}
-        className="file-input file-input-bordered w-full"
+        className="file-input file-input-bordered w-full file:mr-5"
         validateFile={(file: File) => {
           // Validate file type and size
           const validTypes = ["image/jpeg", "image/png", "image/webp"];
